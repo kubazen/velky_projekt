@@ -1,16 +1,4 @@
-// FitCalc Pro – Faze 2
-// Tridy, polymorfismus, vypis do konzole i na stranku
-class User {
-    name;
-    weightKg;
-    constructor(name, weightKg) {
-        this.name = name;
-        this.weightKg = weightKg;
-    }
-    getLabel() {
-        return this.name + " (" + this.weightKg + " kg)";
-    }
-}
+"use strict";
 class Activity {
     name;
     durationMin;
@@ -20,138 +8,216 @@ class Activity {
         this.durationMin = durationMin;
         this.intensity = intensity;
     }
-    getSummary(weightKg) {
-        var cal = this.calculateCalories(weightKg);
-        var idx = this.getPerformanceIndex();
-        return this.name + " | " + this.durationMin + " min | intenzita: " + this.intensity + "/10 | " + cal + " kcal | index: " + idx;
+    getSummary() {
+        return `Aktivita: ${this.name}, Doba trvání: ${this.durationMin} min, Intenzita: ${this.intensity}/10`;
+    }
+    getDuration() {
+        return this.durationMin;
+    }
+    getName() {
+        return this.name;
     }
 }
 class RunningActivity extends Activity {
     distanceKm;
     paceMinsPerKm;
-    constructor(name, durationMin, intensity, distanceKm, paceMinsPerKm) {
-        super(name, durationMin, intensity);
+    constructor(durationMin, intensity, distanceKm, paceMinsPerKm) {
+        super("Běh", durationMin, intensity);
         this.distanceKm = distanceKm;
         this.paceMinsPerKm = paceMinsPerKm;
     }
-    calculateCalories(weightKg) {
-        return Math.round(8 * weightKg * (this.durationMin / 60));
+    calculateCalories(userWeightKg) {
+        let met = this.paceMinsPerKm < 5 ? 11.5 : 8.3;
+        return Math.round(this.durationMin * (met * 3.5 * userWeightKg / 200));
     }
     getPerformanceIndex() {
-        return Math.round((this.distanceKm * 10) / this.paceMinsPerKm);
+        if (this.paceMinsPerKm === 0)
+            return 0;
+        return Math.round((this.distanceKm / this.paceMinsPerKm) * this.intensity * 10);
     }
 }
 class StrengthActivity extends Activity {
     sets;
     reps;
-    liftWeightKg;
-    constructor(name, durationMin, intensity, sets, reps, liftWeightKg) {
-        super(name, durationMin, intensity);
+    weightKg;
+    constructor(durationMin, intensity, sets, reps, weightKg) {
+        super("Silový trénink", durationMin, intensity);
         this.sets = sets;
         this.reps = reps;
-        this.liftWeightKg = liftWeightKg;
+        this.weightKg = weightKg;
     }
-    calculateCalories(weightKg) {
-        return Math.round(5 * weightKg * (this.durationMin / 60));
+    calculateCalories(userWeightKg) {
+        let baseMet = 5.0;
+        return Math.round(this.durationMin * (baseMet * 3.5 * userWeightKg / 200) * (this.intensity / 5));
     }
     getPerformanceIndex() {
-        return this.sets * this.reps * this.liftWeightKg;
+        return Math.round((this.sets * this.reps * this.weightKg) / 100 * (this.intensity / 10));
+    }
+}
+class CyclingActivity extends Activity {
+    distanceKm;
+    averageSpeedKmh;
+    elevationGainM;
+    constructor(durationMin, intensity, distanceKm, averageSpeedKmh, elevationGainM) {
+        super("Cyklistika", durationMin, intensity);
+        this.distanceKm = distanceKm;
+        this.averageSpeedKmh = averageSpeedKmh;
+        this.elevationGainM = elevationGainM;
+    }
+    calculateCalories(userWeightKg) {
+        let effectiveMet = 7.5 + (this.averageSpeedKmh * 0.1) + (this.elevationGainM / 500);
+        return Math.round(this.durationMin * (effectiveMet * 3.5 * userWeightKg / 200));
+    }
+    getPerformanceIndex() {
+        return Math.round((this.distanceKm * (this.averageSpeedKmh / 20)) + (this.elevationGainM * 0.05));
+    }
+}
+class SwimmingActivity extends Activity {
+    distanceMeters;
+    strokeType;
+    constructor(durationMin, intensity, distanceMeters, strokeType) {
+        super("Plavání", durationMin, intensity);
+        this.distanceMeters = distanceMeters;
+        this.strokeType = strokeType;
+    }
+    calculateCalories(userWeightKg) {
+        let met = 7.0;
+        if (this.strokeType === "Kraul")
+            met = 10.0;
+        if (this.strokeType === "Motýlek")
+            met = 13.8;
+        if (this.strokeType === "Znak")
+            met = 8.0;
+        return Math.round(this.durationMin * (met * 3.5 * userWeightKg / 200));
+    }
+    getPerformanceIndex() {
+        if (this.durationMin === 0)
+            return 0;
+        let speedModifier = this.strokeType === "Mot�lek" ? 1.5 : 1.0;
+        return Math.round((this.distanceMeters / this.durationMin) * speedModifier);
     }
 }
 class TrainingSession {
     activities = [];
-    user;
-    constructor(user) {
-        this.user = user;
+    userName;
+    userWeightKg;
+    constructor(userName, userWeightKg) {
+        this.userName = userName;
+        this.userWeightKg = userWeightKg;
     }
     addActivity(activity) {
-        const key = this.buildActivityKey(activity);
-        for (var i = 0; i < this.activities.length; i++) {
-            if (this.buildActivityKey(this.activities[i]) === key) {
-                console.log("Duplicate activity skipped:", activity.getSummary(this.user.weightKg));
-                return;
-            }
-        }
         this.activities.push(activity);
     }
-    buildActivityKey(activity) {
-        if (activity instanceof RunningActivity) {
-            return [
-                "Running",
-                activity.name,
-                activity.durationMin,
-                activity.intensity,
-                activity.distanceKm,
-                activity.paceMinsPerKm
-            ].join("|");
-        }
-        else if (activity instanceof StrengthActivity) {
-            return [
-                "Strength",
-                activity.name,
-                activity.durationMin,
-                activity.intensity,
-                activity.sets,
-                activity.reps,
-                activity.liftWeightKg
-            ].join("|");
-        }
-        else {
-            return [
-                "Activity",
-                activity.name,
-                activity.durationMin,
-                activity.intensity
-            ].join("|");
-        }
-    }
-    getTotalCalories() {
-        var total = 0;
-        for (var i = 0; i < this.activities.length; i++) {
-            total += this.activities[i].calculateCalories(this.user.weightKg);
+    calculateTotalCalories() {
+        let total = 0;
+        for (let activity of this.activities) {
+            total += activity.calculateCalories(this.userWeightKg);
         }
         return total;
     }
-    getAverageIntensity() {
-        if (this.activities.length === 0)
-            return 0;
-        var sum = 0;
-        for (var i = 0; i < this.activities.length; i++) {
-            sum += this.activities[i].intensity;
+    calculateTotalDuration() {
+        let total = 0;
+        for (let activity of this.activities) {
+            total += activity.getDuration();
         }
-        return Math.round(sum / this.activities.length);
+        return total;
     }
-    getReport() {
-        var lines = [];
-        lines.push("Uzivatel: " + this.user.getLabel());
-        lines.push("Aktivity: " + this.activities.length);
-        lines.push("Prumerna intenzita: " + this.getAverageIntensity() + "/10");
-        lines.push("");
-        for (var i = 0; i < this.activities.length; i++) {
-            lines.push(this.activities[i].getSummary(this.user.weightKg));
-        }
-        lines.push("");
-        lines.push("Celkem kalorii: " + this.getTotalCalories() + " kcal");
-        return lines;
+    getActivities() {
+        return this.activities;
+    }
+    getUserName() {
+        return this.userName;
+    }
+    getUserWeight() {
+        return this.userWeightKg;
     }
 }
-function runApp() {
-    var nameEl = document.getElementById("userName");
-    var weightEl = document.getElementById("userWeight");
-    var output = document.getElementById("output");
-    var user = new User(nameEl.value || "Uzivatel", parseFloat(weightEl.value) || 75);
-    var session = new TrainingSession(user);
-    session.addActivity(new RunningActivity("Ranni beh", 45, 7, 7.5, 5.5));
-    session.addActivity(new RunningActivity("Vecerni jogging", 30, 5, 4.0, 7.5));
-    session.addActivity(new StrengthActivity("Bench press", 60, 8, 4, 10, 80));
-    session.addActivity(new StrengthActivity("Drepy", 45, 9, 5, 8, 100));
-    var report = session.getReport();
-    var html = "";
-    for (var i = 0; i < report.length; i++) {
-        html += report[i] === "" ? "<br>" : "<div>" + report[i] + "</div>";
+let currentSession = null;
+const activityTypeSelect = document.getElementById("activityType");
+const addActivityBtn = document.getElementById("addActivityBtn");
+const activitiesContainer = document.getElementById("activitiesContainer");
+const userOverview = document.getElementById("userOverview");
+const sessionSummary = document.getElementById("sessionSummary");
+const totalTimeSpan = document.getElementById("totalTime");
+const totalCaloriesSpan = document.getElementById("totalCalories");
+activityTypeSelect?.addEventListener("change", () => {
+    const selectedType = activityTypeSelect.value;
+    document.querySelectorAll(".activity-fields").forEach(el => el.classList.add("hidden"));
+    const targetBlock = document.getElementById(`inputs-${selectedType}`);
+    if (targetBlock) {
+        targetBlock.classList.remove("hidden");
     }
-    output.innerHTML = html;
-    console.log(report.join("\n"));
+});
+addActivityBtn?.addEventListener("click", () => {
+    const nameInput = document.getElementById("userName").value.trim();
+    const weightInput = parseFloat(document.getElementById("userWeight").value);
+    if (!nameInput || isNaN(weightInput)) {
+        alert("Prosím, vyplňte nejprve korektní jméno a váhu sportovce.");
+        return;
+    }
+    if (!currentSession || currentSession.getUserName() !== nameInput || currentSession.getUserWeight() !== weightInput) {
+        currentSession = new TrainingSession(nameInput, weightInput);
+        activitiesContainer.innerHTML = "";
+    }
+    const duration = parseInt(document.getElementById("duration").value);
+    const intensity = parseInt(document.getElementById("intensity").value);
+    const type = activityTypeSelect.value;
+    let newActivity;
+    switch (type) {
+        case "running":
+            const runDist = parseFloat(document.getElementById("runDistance").value);
+            const runPace = parseFloat(document.getElementById("runPace").value);
+            newActivity = new RunningActivity(duration, intensity, runDist, runPace);
+            break;
+        case "strength":
+            const sSets = parseInt(document.getElementById("strengthSets").value);
+            const sReps = parseInt(document.getElementById("strengthReps").value);
+            const sWeight = parseFloat(document.getElementById("strengthWeight").value);
+            newActivity = new StrengthActivity(duration, intensity, sSets, sReps, sWeight);
+            break;
+        case "cycling":
+            const cDist = parseFloat(document.getElementById("bikeDistance").value);
+            const cSpeed = parseFloat(document.getElementById("bikeSpeed").value);
+            const cElev = parseFloat(document.getElementById("bikeElevation").value);
+            newActivity = new CyclingActivity(duration, intensity, cDist, cSpeed, cElev);
+            break;
+        case "swimming":
+            const sDistM = parseInt(document.getElementById("swimDistance").value);
+            const sStroke = document.getElementById("swimStroke").value;
+            newActivity = new SwimmingActivity(duration, intensity, sDistM, sStroke);
+            break;
+        default:
+            return;
+    }
+    currentSession.addActivity(newActivity);
+    updateUI();
+});
+function updateUI() {
+    if (!currentSession)
+        return;
+    const session = currentSession;
+    userOverview.textContent = `Sportovec: ${session.getUserName()} (${session.getUserWeight()} kg) — Aktuálně zaznamenáno ${session.getActivities().length} aktivit.`;
+    activitiesContainer.innerHTML = "";
+    session.getActivities().forEach(act => {
+        const card = document.createElement("div");
+        let typeClass = "running";
+        if (act instanceof StrengthActivity)
+            typeClass = "strength";
+        if (act instanceof CyclingActivity)
+            typeClass = "cycling";
+        if (act instanceof SwimmingActivity)
+            typeClass = "swimming";
+        card.className = `card ${typeClass}`;
+        const calories = act.calculateCalories(session.getUserWeight());
+        const index = act.getPerformanceIndex();
+        card.innerHTML = `
+            <h4>${act.getName()}</h4>
+            <p>${act.getSummary()}</p>
+            <p class="metrics">Spáleno: ${calories} kcal | Výkonnostní index: ${index}</p>
+        `;
+        activitiesContainer.appendChild(card);
+    });
+    totalTimeSpan.textContent = session.calculateTotalDuration().toString();
+    totalCaloriesSpan.textContent = session.calculateTotalCalories().toString();
+    sessionSummary.classList.remove("hidden");
 }
-window.runApp = runApp;
-export {};

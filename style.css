@@ -1,0 +1,211 @@
+/* Globální reset a typografie */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f4f8;
+    color: #2d3748;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* Hlavička aplikace */
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #2b6cb0, #1a365d);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+/* Hlavní layout (Desktop: Grid se 2 sloupci) */
+.app-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Společný styl pro panely */
+.panel {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.panel h2 {
+    color: #2b6cb0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+/* Formulářové prvky */
+.form-group-global {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.input-box label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #4a5568;
+}
+
+.input-box input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: #fff;
+    transition: border-color 0.2s;
+}
+
+.input-box input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #2b6cb0;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.separator {
+    border: 0;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 20px 0;
+}
+
+/* Tlačítka */
+.btn-primary {
+    display: block;
+    width: 100%;
+    background-color: #319795;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #2c7a7b;
+}
+
+/* Pomocné třídy pro zobrazení/skrytí elementů */
+.hidden {
+    display: none !important;
+}
+
+/* Výsledkové rozhraní - Karty */
+.user-info-box {
+    background-color: #edf2f7;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card {
+    border-left: 5px solid #2b6cb0;
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.card.running { border-left-color: #e53e3e; }
+.card.strength { border-left-color: #319795; }
+.card.cycling { border-left-color: #dd6b20; }
+.card.swimming { border-left-color: #3182ce; }
+
+.card h4 {
+    font-size: 1.15rem;
+    color: #1a202c;
+    margin-bottom: 5px;
+}
+
+.card p {
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+
+.card .metrics {
+    margin-top: 8px;
+    font-weight: bold;
+    color: #2b6cb0;
+}
+
+/* Souhrnný box */
+.summary-box {
+    background: #2d3748;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.summary-box h3 {
+    border-bottom: 1px solid #4a5568;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.summary-metrics {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* RESPONSIVITY (Mobilní zařízení - 1 sloupec) */
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+    }
+    .app-header h1 {
+        font-size: 2rem;
+    }
+    .summary-metrics {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

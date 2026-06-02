@@ -1,15 +1,144 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>FitCalc Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitCalc Pro – Kalkulačka výkonu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>FitCalc Pro</h1>
-  <label>Jmeno: <input id="userName" type="text" placeholder="Jan Novak"></label><br><br>
-  <label>Vaha (kg): <input id="userWeight" type="number" placeholder="80"></label><br><br>
-  <button onclick="runApp()">Spocitat trenink</button>
-  <div id="output"></div>
-  <script type="module" src="script.js"></script>
+    <header class="app-header">
+        <h1>FitCalc Pro</h1>
+        <p>Profesionální kalkulačka tréninkového výkonu a kalorií</p>
+    </header>
+
+    <main class="app-container">
+        <section class="panel form-panel">
+            <h2>Nový trénink</h2>
+            
+            <div class="form-group-global">
+                <div class="input-box">
+                    <label for="userName">Jméno sportovce:</label>
+                    <input type="text" id="userName" placeholder="Např. Petr" required>
+                </div>
+                <div class="input-box">
+                    <label for="userWeight">Váha (kg):</label>
+                    <input type="number" id="userWeight" min="30" max="250" value="70" required>
+                </div>
+            </div>
+
+            <hr class="separator">
+
+            <div class="form-group">
+                <label for="activityType">Typ fyzické aktivity:</label>
+                <select id="activityType">
+                    <option value="running">Běh (RunningActivity)</option>
+                    <option value="strength">Silový trénink (StrengthActivity)</option>
+                    <option value="cycling">Cyklistika (CyclingActivity)</option>
+                    <option value="swimming">Plavání (SwimmingActivity)</option>
+                </select>
+            </div>
+
+            <div class="form-group-row">
+                <div class="input-box">
+                    <label for="duration">Doba trvání (min):</label>
+                    <input type="number" id="duration" min="1" value="30">
+                </div>
+                <div class="input-box">
+                    <label for="intensity">Intenzita (1–10):</label>
+                    <input type="number" id="intensity" min="1" max="10" value="5">
+                </div>
+            </div>
+
+            <div id="dynamicInputs">
+                <div id="inputs-running" class="activity-fields">
+                    <div class="form-group-row">
+                        <div class="input-box">
+                            <label for="runDistance">Vzdálenost (km):</label>
+                            <input type="number" id="runDistance" step="0.1" value="5">
+                        </div>
+                        <div class="input-box">
+                            <label for="runPace">Tempo (min/km):</label>
+                            <input type="number" id="runPace" step="0.1" value="5.5">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inputs-strength" class="activity-fields hidden">
+                    <div class="form-group-row">
+                        <div class="input-box">
+                            <label for="strengthSets">Počet sérií:</label>
+                            <input type="number" id="strengthSets" value="4">
+                        </div>
+                        <div class="input-box">
+                            <label for="strengthReps">Opakování v sérii:</label>
+                            <input type="number" id="strengthReps" value="10">
+                        </div>
+                        <div class="input-box">
+                            <label for="strengthWeight">Váha činky (kg):</label>
+                            <input type="number" id="strengthWeight" value="60">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inputs-cycling" class="activity-fields hidden">
+                    <div class="form-group-row">
+                        <div class="input-box">
+                            <label for="bikeDistance">Vzdálenost (km):</label>
+                            <input type="number" id="bikeDistance" step="0.1" value="20">
+                        </div>
+                        <div class="input-box">
+                            <label for="bikeSpeed">Průměrná rychlost (km/h):</label>
+                            <input type="number" id="bikeSpeed" step="0.1" value="22">
+                        </div>
+                        <div class="input-box">
+                            <label for="bikeElevation">Převýšení (m):</label>
+                            <input type="number" id="bikeElevation" value="150">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inputs-swimming" class="activity-fields hidden">
+                    <div class="form-group-row">
+                        <div class="input-box">
+                            <label for="swimDistance">Uplavaná vzdálenost (m):</label>
+                            <input type="number" id="swimDistance" value="1000">
+                        </div>
+                        <div class="input-box">
+                            <label for="swimStroke">Plavecký styl:</label>
+                            <select id="swimStroke">
+                                <option value="Kraul">Kraul</option>
+                                <option value="Prsa">Prsa</option>
+                                <option value="Znak">Znak</option>
+                                <option value="Motýlek">Motýlek</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="addActivityBtn" class="btn-primary">Přidat aktivitu do tréninku</button>
+        </section>
+
+        <section class="panel results-panel">
+            <h2>Přehled tréninkové session</h2>
+            <div id="userOverview" class="user-info-box">
+                <p>Zadejte údaje a přidejte první aktivitu.</p>
+            </div>
+
+            <div id="activitiesContainer" class="cards-grid">
+                </div>
+
+            <div id="sessionSummary" class="summary-box hidden">
+                <h3>Celkový sumář</h3>
+                <div class="summary-metrics">
+                    <p>Celkový čas: <span id="totalTime">0</span> min</p>
+                    <p>Celkem spálené kalorie: <span id="totalCalories">0</span> kcal</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
